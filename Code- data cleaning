@@ -1,0 +1,308 @@
+
+pacman::p_load("pacman","tidyverse","rpart","rpart.plot","readxl")
+setwd("~/Desktop/Data_Mining/R-Files")
+#Assignment_5 <- read_xlsx("Homework_5.xlsx")
+#Dataset - Raw Data-Order and Sample
+OrderSample <- read_xlsx("Champo.xlsx",sheet = 2)
+
+#Dataset - Data Order ONLY 
+DataOrder <- read_xlsx("Champo.xlsx", sheet = 3)
+
+#Data on Sample ONLY
+DataOnSample<- read_xlsx("Champo.xlsx", sheet = 4)
+
+#Data for Recommendation
+DataForRecommendation <- read_xlsx("Champo.xlsx", sheet = 5)
+
+#Data for Clustering
+DataForClustering <- read_xlsx("Champo.xlsx",sheet = 6)
+
+#Data-Association Rules A-11
+AssociationRules <- read_xlsx("Champo.xlsx", sheet = 7)
+
+####Data Cleaning for Order Sample table####
+
+head(DataOnSample)
+str(DataOnSample)
+#Creating backup for Order Sample Dataset
+OrderSample2 <- OrderSample
+    #There are no outliers in OrderType, OrderCategory, CustomerCode,  CountryName, Custorderdate, UnitName
+  
+    #Converting values of categorical with character into factor format
+    OrderSample$OrderType<- as.factor(OrderSample$OrderType)
+    OrderSample$OrderCategory <- as.factor(OrderSample$OrderCategory)
+    #OrderSample$CustomerCode <- as.numeric(OrderSample$CustomerCode)
+    OrderSample$CountryName <- as.factor(OrderSample$CountryName)
+    OrderSample$UnitName <- as.factor(OrderSample$UnitName)
+    OrderSample$ITEM_NAME <- as.factor(OrderSample$ITEM_NAME)
+    #OrderSample$QualityName <- as.numeric(OrderSample$QualityName)
+    #OrderSample$DesignName <- as.numeric(OrderSample$DesignName)
+    #OrderSample$ColorName <- as.numeric(OrderSample$ColorName)
+    OrderSample$ShapeName <- as.factor(OrderSample$ShapeName)
+    
+    
+    
+    #Converting values of categorical with posix format into date format
+    OrderSample$Custorderdate <- as.Date(OrderSample$Custorderdate)
+    
+    #Removing Custorderdate as we are not getting the tree
+    OrderSample <- select(OrderSample,-c('Custorderdate'))
+    
+  #There are outliers in CustomerOrderNo
+
+        #Since there are a lot of values in CustomerOrderNo we do the following to extract most occuring value in our data
+      CON1<-OrderSample$CustomerOrderNo
+      sort(table(CON1), decreasing = T)[1:3] #By doing this we get the top 3 frequently occuring values in the column
+      
+      #the value "12985" has occured 114 times so we replace the NA values with it 
+      a3<-OrderSample$CustomerOrderNo
+      e3<-replace_na(a3,"12985")
+      OrderSample$CustomerOrderNo<-as.numeric(e3)
+      
+
+      
+####Data Cleaning for DataOrder table####
+      
+      sum(is.na(DataOrder))
+      
+      #There are no outliers in DataOrder table
+      
+      
+####Data Cleaning for DataOnSample table ####
+      
+      #There are about 273 outliers so we need to remove them 
+      
+#There are no outliers for the following values
+      DataOnSample$CustomerCode <- as.factor(DataOnSample$CustomerCode)
+      DataOnSample$CountryName <- as.factor(DataOnSample$CountryName)
+      
+      
+#There are outliers for the following values
+      #USA
+      sum(is.na(DataOnSample$USA))
+      table(DataOnSample$USA)
+      
+      
+      
+  #Since '0' has occured most no of times we consider replacing NA values with it
+      a4<-DataOnSample$USA
+      e4<-replace_na(a4,0)
+      DataOnSample$USA<-as.factor(e4)
+      
+  #UK
+      #Since '0' has occured most no of times we consider replacing NA values with it
+      
+      a5<-DataOnSample$UK
+      e5<-replace_na(a5,0)
+      DataOnSample$UK<-as.factor(e5)
+     
+      #Italy
+      #Since '0' has occured most no of times we consider replacing NA values with it 
+      
+      table(DataOnSample$Italy)
+      sum(is.na(DataOnSample$Italy))
+      a6<-DataOnSample$Italy
+      e6<-replace_na(a6,0)
+      DataOnSample$Italy<-as.factor(e6)
+      
+ 
+      #Belgium
+      #Since '0' has occured most no of times we consider replacing NA values with it 
+      
+      table(DataOnSample$Belgium)
+      sum(is.na(DataOnSample$Belgium))
+      a7<-DataOnSample$Belgium
+      e7<-replace_na(a7,0)
+      DataOnSample$Belgium<-as.factor(e7)
+      
+      
+      #Romania
+      #Since '0' has occured most no of times we consider replacing NA values with it 
+      
+      table(DataOnSample$Romania)
+      sum(is.na(DataOnSample$Romania))
+      a8<-DataOnSample$Romania
+      e8<-replace_na(a8,0)
+      DataOnSample$Romania<-as.factor(e8)
+      
+      
+      #Australia
+      #Since '0' has occured most no of times we consider replacing NA values with it 
+      
+      table(DataOnSample$Australia)
+      sum(is.na(DataOnSample$Australia))
+      a9<-DataOnSample$Australia
+      e9<-replace_na(a9,0)
+      DataOnSample$Australia<-as.factor(e9)
+      
+      #India
+      #Since '0' has occured most no of times we consider replacing NA values with it 
+      
+      table(DataOnSample$India)
+      sum(is.na(DataOnSample$India))
+      a10<-DataOnSample$India
+      e10<-replace_na(a10,0)
+      DataOnSample$India<-as.factor(e10)
+      
+      #QtyRequired
+      #No Outliers
+      
+      table(DataOnSample$QtyRequired)
+      sum(is.na(DataOnSample$QtyRequired))
+      
+      #item name
+      table(DataOnSample$ITEM_NAME)
+      sum(is.na(DataOnSample$ITEM_NAME))
+      
+      #Hand Tufted
+      table(DataOnSample$`Hand Tufted`)
+      sum(is.na(DataOnSample$`Hand Tufted`))
+      
+      #Durry
+      table(DataOnSample$Durry)
+      sum(is.na(DataOnSample$Durry))
+      
+      #Double back
+      table(DataOnSample$`Double Back`)
+      sum(is.na(DataOnSample$`Double Back`))
+      
+      #Hand Woven
+      table(DataOnSample$`Hand Woven`)
+      sum(is.na(DataOnSample$`Hand Woven`))
+      
+      #Knotted
+      table(DataOnSample$Knotted)
+      sum(is.na(DataOnSample$Knotted))
+      
+      #Jacquard
+      table(DataOnSample$Jacquard)
+      sum(is.na(DataOnSample$Jacquard))
+      
+      #Handloom
+      table(DataOnSample$Handloom)
+      sum(is.na(DataOnSample$Handloom))
+      
+      #Other
+      table(DataOnSample$Other)
+      sum(is.na(DataOnSample$Other))
+      
+      #Shape Name
+      table(DataOnSample$ShapeName)
+      sum(is.na(DataOnSample$ShapeName))
+      
+      #REC
+      table(DataOnSample$REC)
+      sum(is.na(DataOnSample$REC))
+      
+      #Round
+      table(DataOnSample$Round)
+      sum(is.na(DataOnSample$Round))
+      
+      #square
+      table(DataOnSample$Square)
+      sum(is.na(DataOnSample$Square))
+      
+      #areaft
+      table(DataOnSample$AreaFt)
+      sum(is.na(DataOnSample$AreaFt))
+      
+      #Order Conversion
+      table(DataOnSample$`Order Conversion`)
+      sum(is.na(DataOnSample$`Order Conversion`))
+      
+      
+      #Converting a few variables into factor so that it becomes easier for us to construct models
+      DataOnSample$ITEM_NAME <- as.factor(DataOnSample$ITEM_NAME)
+      DataOnSample$`Hand Tufted` <- as.factor(DataOnSample$`Hand Tufted`)
+      DataOnSample$Durry <- as.factor(DataOnSample$Durry)
+      DataOnSample$`Hand Woven` <- as.factor(DataOnSample$`Hand Woven`)
+      DataOnSample$Knotted <- as.factor(DataOnSample$Knotted)
+      DataOnSample$Jacquard <- as.factor(DataOnSample$Jacquard)
+      DataOnSample$Handloom <- as.factor(DataOnSample$Handloom)
+      DataOnSample$Other <- as.factor(DataOnSample$Other)
+      DataOnSample$ShapeName <- as.factor(DataOnSample$ShapeName)
+      DataOnSample$REC <- as.factor(DataOnSample$REC)
+      DataOnSample$Round <- as.factor(DataOnSample$Round)
+      DataOnSample$Square <- as.factor(DataOnSample$Square)
+      DataOnSample$`Order Conversion` <- as.factor(DataOnSample$`Order Conversion`)
+      DataOnSample$`Double Back` <- as.factor(DataOnSample$`Double Back`)
+      
+      
+      ####Data cleaning for Dataforrecommendation ####
+      
+      sum(is.na(DataForRecommendation))
+      
+     view(DataForRecommendation)
+      
+      
+      
+      
+      
+   
+  
+      
+      
+      
+      
+      
+      ####EDA for Order Sample####
+      
+      #Doing Chi-Square test for each of them Considering Order Type as the target variable
+      
+      OrderSample$OrderType
+      chisq.test(OrderSample$OrderCategory,OrderSample$OrderType,correct = F) #Has a relation
+      chisq.test(OrderSample$CustomerCode,OrderSample$OrderType,correct = F) #Has a relation
+      chisq.test(OrderSample$CountryName,OrderSample$OrderType,correct = F) #Has a relation
+      chisq.test(OrderSample$Custorderdate,OrderSample$OrderType,correct = F) #Has a relation
+      chisq.test(OrderSample$UnitName,OrderSample$OrderType,correct = F) #Has a relation
+      chisq.test(OrderSample$QtyRequired,OrderSample$OrderType,correct = F) #Has a relation
+      chisq.test(OrderSample$TotalArea,OrderSample$OrderType,correct = F) #Has a relation
+      chisq.test(OrderSample$Amount,OrderSample$OrderType,correct = F) #Has a relation
+      chisq.test(OrderSample$ITEM_NAME,OrderSample$OrderType,correct = F) #Has a relation
+      chisq.test(OrderSample$QualityName,OrderSample$OrderType,correct = F) #Has a relation
+      chisq.test(OrderSample$DesignName,OrderSample$OrderType,correct = F) #Has a relation
+      chisq.test(OrderSample$ColorName,OrderSample$OrderType,correct = F) #Has a relation
+      chisq.test(OrderSample$ShapeName,OrderSample$OrderType,correct = F) #Has a relation
+      chisq.test(OrderSample$AreaFt,OrderSample$OrderType,correct = F) #Has a relation
+      
+      
+      
+      
+      ####Decision tree for Order Sample####
+      
+      library(ISLR)
+      data(OrderSample)
+      indx <- sample(2,nrow(OrderSample),replace = TRUE,prob=c(0.7,0.3))
+      train <- OrderSample[indx==1,]
+      test <- OrderSample[indx==2,]
+      
+      library(rpart)
+      library(rpart.plot)
+      myFormula = OrderType~.
+      OrderSampleTree<- rpart(myFormula, data = train, control = rpart.control(minsplit = 3, minbucket = 2, maxdepth = 4, cp = 0.1), parms = list(split="gini"))
+      OrderSampleTree
+      #Displaying it better
+      library(rpart.plot)
+      rpart.plot(OrderSampleTree)
+      
+      
+      ####Random Forest for Order Sample####
+      library(ISLR)
+      Data<-OrderSample[sample(nrow(OrderSample)),]
+      attach(Data)
+      
+      library(randomForest)
+      rf <- randomForest(myFormula, data = Data,
+                         mtry = sqrt(ncol(Data)-1), ntree = 300,
+                         proximity = T, importance = T)
+      rf
+      
+      
+      ####EDA for DataOnSample####
+      
+      
+      
+      ####Decision Tree for DataonSample####
+      
+      
+     
